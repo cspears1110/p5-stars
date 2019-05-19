@@ -12,6 +12,8 @@ let rect_center, rect_width, rect_height;
 
 let moveRect = false;
 
+let starsInRect = [];
+
 function preload(){
   if (magnitude_cutoff == null) {
     magnitude_cutoff = -0.9923;
@@ -48,11 +50,6 @@ function draw() {
   strokeWeight(1);
   noFill();
   rect_window = rect(rect_center.x, rect_center.y, rect_width, rect_height);
-
-  //Will use to see if mouse or star is in rect
-  if (calculateIsInsideRect(width/2, height/2)){
-    //console.log("Yes");
-  }
 }
 
 function mousePressed() {
@@ -70,17 +67,20 @@ function mouseDragged() {
 function mouseReleased(){
   if (moveRect) {
     moveRect = false;
+    calculateStarsInRect();
+    console.log(starsInRect);
   }
 }
 
-function trimJSON() {
-  // trim JSON based on magnitude_cutoff, place in stars array
-  // AbsMag is set to Vector.z
-  for(let i = 0; i < Object.keys(json).length; i++) {
-    if (json[i].AbsMag >= magnitude_cutoff) {
-      stars.push(createVector(json[i].X, json[i].Y, json[i].AbsMag))
+function calculateStarsInRect() {
+  let tempArray = [];
+  for (let star of stars) {
+    if (calculateIsInsideRect(star.x, star.y)){
+      tempArray.push(star);
     }
   }
+  tempArray.sort(function(a,b){return a.x - b.x})
+  starsInRect = {tempArray};
 }
 
 function calculateIsInsideRect(x, y) {
@@ -121,6 +121,16 @@ function calculateIsInsideRect(x, y) {
 function calculateAreaTriangle(v1, v2, v3) {
   let area = (v1.x*(v2.y - v3.y) + v2.x*(v3.y - v1.y) + v3.x*(v1.y - v2.y))/2
   return Math.abs(area);
+}
+
+function trimJSON() {
+  // trim JSON based on magnitude_cutoff, place in stars array
+  // AbsMag is set to Vector.z
+  for(let i = 0; i < Object.keys(json).length; i++) {
+    if (json[i].AbsMag >= magnitude_cutoff) {
+      stars.push(createVector(json[i].X, json[i].Y, json[i].AbsMag))
+    }
+  }
 }
 
 // start server:
